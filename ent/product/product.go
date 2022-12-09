@@ -19,6 +19,8 @@ const (
 	FieldQuantity = "quantity"
 	// EdgeSub holds the string denoting the sub edge name in mutations.
 	EdgeSub = "sub"
+	// EdgeCart holds the string denoting the cart edge name in mutations.
+	EdgeCart = "cart"
 	// Table holds the table name of the product in the database.
 	Table = "products"
 	// SubTable is the table that holds the sub relation/edge. The primary key declared below.
@@ -26,6 +28,11 @@ const (
 	// SubInverseTable is the table name for the SubCategory entity.
 	// It exists in this package in order to avoid circular dependency with the "subcategory" package.
 	SubInverseTable = "sub_categories"
+	// CartTable is the table that holds the cart relation/edge. The primary key declared below.
+	CartTable = "product_cart"
+	// CartInverseTable is the table name for the Cart entity.
+	// It exists in this package in order to avoid circular dependency with the "cart" package.
+	CartInverseTable = "carts"
 )
 
 // Columns holds all SQL columns for product fields.
@@ -42,6 +49,9 @@ var (
 	// SubPrimaryKey and SubColumn2 are the table columns denoting the
 	// primary key for the sub relation (M2M).
 	SubPrimaryKey = []string{"sub_category_id", "product_id"}
+	// CartPrimaryKey and CartColumn2 are the table columns denoting the
+	// primary key for the cart relation (M2M).
+	CartPrimaryKey = []string{"product_id", "cart_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).

@@ -17,8 +17,15 @@ const (
 	FieldPassword = "password"
 	// FieldRole holds the string denoting the role field in the database.
 	FieldRole = "role"
+	// EdgeCarts holds the string denoting the carts edge name in mutations.
+	EdgeCarts = "carts"
 	// Table holds the table name of the user in the database.
 	Table = "users"
+	// CartsTable is the table that holds the carts relation/edge. The primary key declared below.
+	CartsTable = "user_carts"
+	// CartsInverseTable is the table name for the Cart entity.
+	// It exists in this package in order to avoid circular dependency with the "cart" package.
+	CartsInverseTable = "carts"
 )
 
 // Columns holds all SQL columns for user fields.
@@ -28,6 +35,12 @@ var Columns = []string{
 	FieldPassword,
 	FieldRole,
 }
+
+var (
+	// CartsPrimaryKey and CartsColumn2 are the table columns denoting the
+	// primary key for the carts relation (M2M).
+	CartsPrimaryKey = []string{"user_id", "cart_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {

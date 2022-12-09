@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"shopular/ent/cart"
 	"shopular/ent/predicate"
 	"shopular/ent/product"
 	"shopular/ent/subcategory"
@@ -87,6 +88,21 @@ func (pu *ProductUpdate) AddSub(s ...*SubCategory) *ProductUpdate {
 	return pu.AddSubIDs(ids...)
 }
 
+// AddCartIDs adds the "cart" edge to the Cart entity by IDs.
+func (pu *ProductUpdate) AddCartIDs(ids ...int) *ProductUpdate {
+	pu.mutation.AddCartIDs(ids...)
+	return pu
+}
+
+// AddCart adds the "cart" edges to the Cart entity.
+func (pu *ProductUpdate) AddCart(c ...*Cart) *ProductUpdate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return pu.AddCartIDs(ids...)
+}
+
 // Mutation returns the ProductMutation object of the builder.
 func (pu *ProductUpdate) Mutation() *ProductMutation {
 	return pu.mutation
@@ -111,6 +127,27 @@ func (pu *ProductUpdate) RemoveSub(s ...*SubCategory) *ProductUpdate {
 		ids[i] = s[i].ID
 	}
 	return pu.RemoveSubIDs(ids...)
+}
+
+// ClearCart clears all "cart" edges to the Cart entity.
+func (pu *ProductUpdate) ClearCart() *ProductUpdate {
+	pu.mutation.ClearCart()
+	return pu
+}
+
+// RemoveCartIDs removes the "cart" edge to Cart entities by IDs.
+func (pu *ProductUpdate) RemoveCartIDs(ids ...int) *ProductUpdate {
+	pu.mutation.RemoveCartIDs(ids...)
+	return pu
+}
+
+// RemoveCart removes "cart" edges to Cart entities.
+func (pu *ProductUpdate) RemoveCart(c ...*Cart) *ProductUpdate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return pu.RemoveCartIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -260,6 +297,60 @@ func (pu *ProductUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if pu.mutation.CartCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   product.CartTable,
+			Columns: product.CartPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: cart.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.RemovedCartIDs(); len(nodes) > 0 && !pu.mutation.CartCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   product.CartTable,
+			Columns: product.CartPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: cart.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.CartIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   product.CartTable,
+			Columns: product.CartPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: cart.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, pu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{product.Label}
@@ -338,6 +429,21 @@ func (puo *ProductUpdateOne) AddSub(s ...*SubCategory) *ProductUpdateOne {
 	return puo.AddSubIDs(ids...)
 }
 
+// AddCartIDs adds the "cart" edge to the Cart entity by IDs.
+func (puo *ProductUpdateOne) AddCartIDs(ids ...int) *ProductUpdateOne {
+	puo.mutation.AddCartIDs(ids...)
+	return puo
+}
+
+// AddCart adds the "cart" edges to the Cart entity.
+func (puo *ProductUpdateOne) AddCart(c ...*Cart) *ProductUpdateOne {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return puo.AddCartIDs(ids...)
+}
+
 // Mutation returns the ProductMutation object of the builder.
 func (puo *ProductUpdateOne) Mutation() *ProductMutation {
 	return puo.mutation
@@ -362,6 +468,27 @@ func (puo *ProductUpdateOne) RemoveSub(s ...*SubCategory) *ProductUpdateOne {
 		ids[i] = s[i].ID
 	}
 	return puo.RemoveSubIDs(ids...)
+}
+
+// ClearCart clears all "cart" edges to the Cart entity.
+func (puo *ProductUpdateOne) ClearCart() *ProductUpdateOne {
+	puo.mutation.ClearCart()
+	return puo
+}
+
+// RemoveCartIDs removes the "cart" edge to Cart entities by IDs.
+func (puo *ProductUpdateOne) RemoveCartIDs(ids ...int) *ProductUpdateOne {
+	puo.mutation.RemoveCartIDs(ids...)
+	return puo
+}
+
+// RemoveCart removes "cart" edges to Cart entities.
+func (puo *ProductUpdateOne) RemoveCart(c ...*Cart) *ProductUpdateOne {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return puo.RemoveCartIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -533,6 +660,60 @@ func (puo *ProductUpdateOne) sqlSave(ctx context.Context) (_node *Product, err e
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: subcategory.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if puo.mutation.CartCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   product.CartTable,
+			Columns: product.CartPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: cart.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.RemovedCartIDs(); len(nodes) > 0 && !puo.mutation.CartCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   product.CartTable,
+			Columns: product.CartPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: cart.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.CartIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   product.CartTable,
+			Columns: product.CartPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: cart.FieldID,
 				},
 			},
 		}

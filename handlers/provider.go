@@ -15,6 +15,7 @@ func SetUpHandlers(app *fiber.App, sp *services.Provider) {
 	uploadRoutes(api)
 	staticRoutes(app)
 	authRoutes(api, sp.User)
+	cartRoutes(api, sp.Cart)
 }
 
 func categoryRoutes(router fiber.Router, service services.CategoryService) {
@@ -26,9 +27,6 @@ func categoryRoutes(router fiber.Router, service services.CategoryService) {
 
 func productRoutes(router fiber.Router, service services.ProductService) {
 	product := router.Group("/product")
-	product.Use(jwtware.New(jwtware.Config{
-		SigningKey: []byte("secret"),
-	}))
 	ph := NewProductHandler(&service)
 	product.Post("/create", ph.Create)
 	product.Get("/all", ph.GetAll)
@@ -52,6 +50,17 @@ func authRoutes(router fiber.Router, service services.UserService) {
 	ah := NewAuthHandler(service)
 	auth.Post("/signup", ah.Register)
 	auth.Post("/login", ah.Login)
+}
+
+func cartRoutes(router fiber.Router, service services.CartService) {
+	cart := router.Group("/cart")
+	cart.Use(jwtware.New(jwtware.Config{
+		SigningKey: []byte("secret"),
+	}))
+	sch := NewCartHandler(service)
+	cart.Get("/", sch.ViewCart)
+	cart.Post("/add/:productId", sch.AddToCart)
+	cart.Post("/remove/:cartId", sch.RemoveFromCart)
 }
 
 func staticRoutes(app *fiber.App) {

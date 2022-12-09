@@ -8,6 +8,17 @@ import (
 )
 
 var (
+	// CartsColumns holds the columns for the "carts" table.
+	CartsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "quantity", Type: field.TypeInt},
+	}
+	// CartsTable holds the schema information for the "carts" table.
+	CartsTable = &schema.Table{
+		Name:       "carts",
+		Columns:    CartsColumns,
+		PrimaryKey: []*schema.Column{CartsColumns[0]},
+	}
 	// CategoriesColumns holds the columns for the "categories" table.
 	CategoriesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -73,6 +84,31 @@ var (
 		Columns:    UsersColumns,
 		PrimaryKey: []*schema.Column{UsersColumns[0]},
 	}
+	// ProductCartColumns holds the columns for the "product_cart" table.
+	ProductCartColumns = []*schema.Column{
+		{Name: "product_id", Type: field.TypeInt},
+		{Name: "cart_id", Type: field.TypeInt},
+	}
+	// ProductCartTable holds the schema information for the "product_cart" table.
+	ProductCartTable = &schema.Table{
+		Name:       "product_cart",
+		Columns:    ProductCartColumns,
+		PrimaryKey: []*schema.Column{ProductCartColumns[0], ProductCartColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "product_cart_product_id",
+				Columns:    []*schema.Column{ProductCartColumns[0]},
+				RefColumns: []*schema.Column{ProductsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "product_cart_cart_id",
+				Columns:    []*schema.Column{ProductCartColumns[1]},
+				RefColumns: []*schema.Column{CartsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// SubCategoryProductColumns holds the columns for the "sub_category_product" table.
 	SubCategoryProductColumns = []*schema.Column{
 		{Name: "sub_category_id", Type: field.TypeInt},
@@ -98,18 +134,50 @@ var (
 			},
 		},
 	}
+	// UserCartsColumns holds the columns for the "user_carts" table.
+	UserCartsColumns = []*schema.Column{
+		{Name: "user_id", Type: field.TypeInt},
+		{Name: "cart_id", Type: field.TypeInt},
+	}
+	// UserCartsTable holds the schema information for the "user_carts" table.
+	UserCartsTable = &schema.Table{
+		Name:       "user_carts",
+		Columns:    UserCartsColumns,
+		PrimaryKey: []*schema.Column{UserCartsColumns[0], UserCartsColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "user_carts_user_id",
+				Columns:    []*schema.Column{UserCartsColumns[0]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "user_carts_cart_id",
+				Columns:    []*schema.Column{UserCartsColumns[1]},
+				RefColumns: []*schema.Column{CartsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		CartsTable,
 		CategoriesTable,
 		ProductsTable,
 		SubCategoriesTable,
 		UsersTable,
+		ProductCartTable,
 		SubCategoryProductTable,
+		UserCartsTable,
 	}
 )
 
 func init() {
 	SubCategoriesTable.ForeignKeys[0].RefTable = CategoriesTable
+	ProductCartTable.ForeignKeys[0].RefTable = ProductsTable
+	ProductCartTable.ForeignKeys[1].RefTable = CartsTable
 	SubCategoryProductTable.ForeignKeys[0].RefTable = SubCategoriesTable
 	SubCategoryProductTable.ForeignKeys[1].RefTable = ProductsTable
+	UserCartsTable.ForeignKeys[0].RefTable = UsersTable
+	UserCartsTable.ForeignKeys[1].RefTable = CartsTable
 }

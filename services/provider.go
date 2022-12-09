@@ -7,6 +7,7 @@ type Provider struct {
 	SubCategory SubCategoryService
 	Product     ProductService
 	User        UserService
+	Cart        CartService
 }
 
 func NewServiceProvider(client *ent.Client) Provider {
@@ -15,5 +16,6 @@ func NewServiceProvider(client *ent.Client) Provider {
 		SubCategory: NewSubCategoryService(client),
 		Product:     NewProductService(client),
 		User:        NewUserService(*client),
+		Cart:        NewCartService(client),
 	}
 }
