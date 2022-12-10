@@ -7,6 +7,7 @@ import (
 	"database/sql/driver"
 	"fmt"
 	"math"
+	"shopular/ent/cart"
 	"shopular/ent/predicate"
 	"shopular/ent/product"
 	"shopular/ent/subcategory"
@@ -26,6 +27,7 @@ type ProductQuery struct {
 	fields     []string
 	predicates []predicate.Product
 	withSub    *SubCategoryQuery
+	withCart   *CartQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -77,6 +79,28 @@ func (pq *ProductQuery) QuerySub() *SubCategoryQuery {
 			sqlgraph.From(product.Table, product.FieldID, selector),
 			sqlgraph.To(subcategory.Table, subcategory.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, product.SubTable, product.SubPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryCart chains the current query on the "cart" edge.
+func (pq *ProductQuery) QueryCart() *CartQuery {
+	query := &CartQuery{config: pq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := pq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := pq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(product.Table, product.FieldID, selector),
+			sqlgraph.To(cart.Table, cart.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, product.CartTable, product.CartPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
 		return fromU, nil
@@ -266,6 +290,7 @@ func (pq *ProductQuery) Clone() *ProductQuery {
 		order:      append([]OrderFunc{}, pq.order...),
 		predicates: append([]predicate.Product{}, pq.predicates...),
 		withSub:    pq.withSub.Clone(),
+		withCart:   pq.withCart.Clone(),
 		// clone intermediate query.
 		sql:    pq.sql.Clone(),
 		path:   pq.path,
@@ -281,6 +306,17 @@ func (pq *ProductQuery) WithSub(opts ...func(*SubCategoryQuery)) *ProductQuery {
 		opt(query)
 	}
 	pq.withSub = query
+	return pq
+}
+
+// WithCart tells the query-builder to eager-load the nodes that are connected to
+// the "cart" edge. The optional arguments are used to configure the query builder of the edge.
+func (pq *ProductQuery) WithCart(opts ...func(*CartQuery)) *ProductQuery {
+	query := &CartQuery{config: pq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	pq.withCart = query
 	return pq
 }
 
@@ -359,8 +395,9 @@ func (pq *ProductQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Prod
 	var (
 		nodes       = []*Product{}
 		_spec       = pq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
 			pq.withSub != nil,
+			pq.withCart != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -385,6 +422,13 @@ func (pq *ProductQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Prod
 		if err := pq.loadSub(ctx, query, nodes,
 			func(n *Product) { n.Edges.Sub = []*SubCategory{} },
 			func(n *Product, e *SubCategory) { n.Edges.Sub = append(n.Edges.Sub, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := pq.withCart; query != nil {
+		if err := pq.loadCart(ctx, query, nodes,
+			func(n *Product) { n.Edges.Cart = []*Cart{} },
+			func(n *Product, e *Cart) { n.Edges.Cart = append(n.Edges.Cart, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -442,6 +486,64 @@ func (pq *ProductQuery) loadSub(ctx context.Context, query *SubCategoryQuery, no
 		nodes, ok := nids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected "sub" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
+}
+func (pq *ProductQuery) loadCart(ctx context.Context, query *CartQuery, nodes []*Product, init func(*Product), assign func(*Product, *Cart)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[int]*Product)
+	nids := make(map[int]map[*Product]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(product.CartTable)
+		s.Join(joinT).On(s.C(cart.FieldID), joinT.C(product.CartPrimaryKey[1]))
+		s.Where(sql.InValues(joinT.C(product.CartPrimaryKey[0]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(product.CartPrimaryKey[0]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	neighbors, err := query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+		assign := spec.Assign
+		values := spec.ScanValues
+		spec.ScanValues = func(columns []string) ([]any, error) {
+			values, err := values(columns[1:])
+			if err != nil {
+				return nil, err
+			}
+			return append([]any{new(sql.NullInt64)}, values...), nil
+		}
+		spec.Assign = func(columns []string, values []any) error {
+			outValue := int(values[0].(*sql.NullInt64).Int64)
+			inValue := int(values[1].(*sql.NullInt64).Int64)
+			if nids[inValue] == nil {
+				nids[inValue] = map[*Product]struct{}{byID[outValue]: {}}
+				return assign(columns[1:], values[1:])
+			}
+			nids[inValue][byID[outValue]] = struct{}{}
+			return nil
+		}
+	})
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "cart" node returned %v`, n.ID)
 		}
 		for kn := range nodes {
 			assign(kn, n)

@@ -568,6 +568,34 @@ func HasSubWith(preds ...predicate.SubCategory) predicate.Product {
 	})
 }
 
+// HasCart applies the HasEdge predicate on the "cart" edge.
+func HasCart() predicate.Product {
+	return predicate.Product(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(CartTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, CartTable, CartPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasCartWith applies the HasEdge predicate on the "cart" edge with a given conditions (other predicates).
+func HasCartWith(preds ...predicate.Cart) predicate.Product {
+	return predicate.Product(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(CartInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, CartTable, CartPrimaryKey...),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Product) predicate.Product {
 	return predicate.Product(func(s *sql.Selector) {

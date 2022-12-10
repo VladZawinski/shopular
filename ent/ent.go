@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"shopular/ent/cart"
 	"shopular/ent/category"
 	"shopular/ent/product"
 	"shopular/ent/subcategory"
@@ -34,6 +35,7 @@ type OrderFunc func(*sql.Selector)
 // columnChecker returns a function indicates if the column exists in the given column.
 func columnChecker(table string) func(string) error {
 	checks := map[string]func(string) bool{
+		cart.Table:        cart.ValidColumn,
 		category.Table:    category.ValidColumn,
 		product.Table:     product.ValidColumn,
 		subcategory.Table: subcategory.ValidColumn,

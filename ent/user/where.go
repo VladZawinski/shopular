@@ -6,6 +6,7 @@ import (
 	"shopular/ent/predicate"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 // ID filters vertices based on their ID field.
@@ -324,6 +325,34 @@ func RoleNotIn(vs ...Role) predicate.User {
 	}
 	return predicate.User(func(s *sql.Selector) {
 		s.Where(sql.NotIn(s.C(FieldRole), v...))
+	})
+}
+
+// HasCarts applies the HasEdge predicate on the "carts" edge.
+func HasCarts() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(CartsTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, CartsTable, CartsPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasCartsWith applies the HasEdge predicate on the "carts" edge with a given conditions (other predicates).
+func HasCartsWith(preds ...predicate.Cart) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(CartsInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, CartsTable, CartsPrimaryKey...),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
 	})
 }
 

@@ -26,5 +26,6 @@ func (Product) Fields() []ent.Field {
 func (Product) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("sub", SubCategory.Type).Ref("product").Required(),
+		edge.To("cart", Cart.Type),
 	}
 }

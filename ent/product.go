@@ -34,9 +34,11 @@ type Product struct {
 type ProductEdges struct {
 	// Sub holds the value of the sub edge.
 	Sub []*SubCategory `json:"sub,omitempty"`
+	// Cart holds the value of the cart edge.
+	Cart []*Cart `json:"cart,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
 // SubOrErr returns the Sub value or an error if the edge
@@ -46,6 +48,15 @@ func (e ProductEdges) SubOrErr() ([]*SubCategory, error) {
 		return e.Sub, nil
 	}
 	return nil, &NotLoadedError{edge: "sub"}
+}
+
+// CartOrErr returns the Cart value or an error if the edge
+// was not loaded in eager-loading.
+func (e ProductEdges) CartOrErr() ([]*Cart, error) {
+	if e.loadedTypes[1] {
+		return e.Cart, nil
+	}
+	return nil, &NotLoadedError{edge: "cart"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -118,6 +129,11 @@ func (pr *Product) assignValues(columns []string, values []any) error {
 // QuerySub queries the "sub" edge of the Product entity.
 func (pr *Product) QuerySub() *SubCategoryQuery {
 	return (&ProductClient{config: pr.config}).QuerySub(pr)
+}
+
+// QueryCart queries the "cart" edge of the Product entity.
+func (pr *Product) QueryCart() *CartQuery {
+	return (&ProductClient{config: pr.config}).QueryCart(pr)
 }
 
 // Update returns a builder for updating this Product.
