@@ -1,10 +1,10 @@
 package handlers
 
 import (
+	"shopular/middlewares"
 	"shopular/services"
 
 	"github.com/gofiber/fiber/v2"
-	jwtware "github.com/gofiber/jwt/v3"
 )
 
 func SetUpHandlers(app *fiber.App, sp *services.Provider) {
@@ -22,6 +22,8 @@ func categoryRoutes(router fiber.Router, service services.CategoryService) {
 	category := router.Group("/category")
 	ch := NewCategoryHandler(&service)
 	category.Get("/all", ch.GetAll)
+	category.Use(middlewares.JwtGuard())
+	category.Use(middlewares.RoleGuard(middlewares.AdminRole))
 	category.Post("/create", ch.Create)
 }
 
@@ -41,6 +43,8 @@ func subCategoryRoutes(router fiber.Router, service services.SubCategoryService)
 
 func uploadRoutes(router fiber.Router) {
 	upload := router.Group("file-upload")
+	upload.Use(middlewares.JwtGuard())
+	upload.Use(middlewares.RoleGuard(middlewares.AdminRole))
 	uh := NewUploadHandler()
 	upload.Post("/product", uh.UploadProductImage)
 }
@@ -54,9 +58,7 @@ func authRoutes(router fiber.Router, service services.UserService) {
 
 func cartRoutes(router fiber.Router, service services.CartService) {
 	cart := router.Group("/cart")
-	cart.Use(jwtware.New(jwtware.Config{
-		SigningKey: []byte("secret"),
-	}))
+	cart.Use(middlewares.JwtGuard())
 	sch := NewCartHandler(service)
 	cart.Get("/", sch.ViewCart)
 	cart.Post("/add/:productId", sch.AddToCart)

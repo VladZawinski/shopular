@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"shopular/dto"
 	"shopular/services"
 	"time"
@@ -32,8 +33,10 @@ func (h AuthHandler) Login(c *fiber.Ctx) error {
 	claims := jwt.MapClaims{
 		"username": u.Username,
 		"userId":   u.ID,
+		"role":     u.Role,
 		"exp":      time.Now().Add(time.Hour * 72).Unix(),
 	}
+	fmt.Println(claims)
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	t, err := token.SignedString([]byte("secret"))
