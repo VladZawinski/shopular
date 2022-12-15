@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"log"
 	"os"
 	"shopular/ent"
@@ -21,9 +20,9 @@ func main() {
 		log.Fatalf("failed opening connection to postgres: %v", err)
 	}
 	defer client.Close()
-	if err := client.Schema.Create(context.Background()); err != nil {
-		log.Fatalf("failed creating schema resources: %v", err)
-	}
+	// if err := client.Schema.Create(context.Background()); err != nil {
+	// 	log.Fatalf("failed creating schema resources: %v", err)
+	// }
 	sp := services.NewServiceProvider(client)
 	handlers.SetUpHandlers(app, &sp)
 	app.Listen(":3000")
