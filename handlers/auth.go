@@ -52,7 +52,7 @@ func (h AuthHandler) Register(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, "Fields are required")
 	}
 	existing := h.userService.FindByUsername(body.Username)
-	if existing == nil {
+	if existing != nil {
 		return fiber.NewError(fiber.StatusConflict)
 	}
 	h.userService.CreateNewUser(*body)
