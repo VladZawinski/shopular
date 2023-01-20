@@ -33,6 +33,48 @@ var (
 		Columns:    CategoriesColumns,
 		PrimaryKey: []*schema.Column{CategoriesColumns[0]},
 	}
+	// CustomersColumns holds the columns for the "customers" table.
+	CustomersColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "first_name", Type: field.TypeString},
+		{Name: "last_name", Type: field.TypeString},
+		{Name: "address", Type: field.TypeString},
+		{Name: "phone", Type: field.TypeString},
+		{Name: "email", Type: field.TypeString},
+		{Name: "order_count", Type: field.TypeInt, Default: 0},
+		{Name: "user_customer", Type: field.TypeInt, Unique: true},
+	}
+	// CustomersTable holds the schema information for the "customers" table.
+	CustomersTable = &schema.Table{
+		Name:       "customers",
+		Columns:    CustomersColumns,
+		PrimaryKey: []*schema.Column{CustomersColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "customers_users_customer",
+				Columns:    []*schema.Column{CustomersColumns[7]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
+	// OrdersColumns holds the columns for the "orders" table.
+	OrdersColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "order_date", Type: field.TypeTime, Nullable: true, SchemaType: map[string]string{"mysql": "datetime"}},
+		{Name: "shipping_address", Type: field.TypeString},
+		{Name: "phone", Type: field.TypeString},
+		{Name: "payment_method", Type: field.TypeEnum, Enums: []string{"Cash", "Banking"}},
+		{Name: "total_price", Type: field.TypeInt32},
+		{Name: "tracking_number", Type: field.TypeString},
+		{Name: "order_status", Type: field.TypeEnum, Enums: []string{"Pending", "Processed", "Shipped", "Cancelled", "PickedUp"}},
+	}
+	// OrdersTable holds the schema information for the "orders" table.
+	OrdersTable = &schema.Table{
+		Name:       "orders",
+		Columns:    OrdersColumns,
+		PrimaryKey: []*schema.Column{OrdersColumns[0]},
+	}
 	// ProductsColumns holds the columns for the "products" table.
 	ProductsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -163,6 +205,8 @@ var (
 	Tables = []*schema.Table{
 		CartsTable,
 		CategoriesTable,
+		CustomersTable,
+		OrdersTable,
 		ProductsTable,
 		SubCategoriesTable,
 		UsersTable,
@@ -173,6 +217,7 @@ var (
 )
 
 func init() {
+	CustomersTable.ForeignKeys[0].RefTable = UsersTable
 	SubCategoriesTable.ForeignKeys[0].RefTable = CategoriesTable
 	ProductCartTable.ForeignKeys[0].RefTable = ProductsTable
 	ProductCartTable.ForeignKeys[1].RefTable = CartsTable

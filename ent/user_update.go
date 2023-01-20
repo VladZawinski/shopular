@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"shopular/ent/cart"
+	"shopular/ent/customer"
 	"shopular/ent/predicate"
 	"shopular/ent/user"
 
@@ -61,6 +62,25 @@ func (uu *UserUpdate) AddCarts(c ...*Cart) *UserUpdate {
 	return uu.AddCartIDs(ids...)
 }
 
+// SetCustomerID sets the "customer" edge to the Customer entity by ID.
+func (uu *UserUpdate) SetCustomerID(id int) *UserUpdate {
+	uu.mutation.SetCustomerID(id)
+	return uu
+}
+
+// SetNillableCustomerID sets the "customer" edge to the Customer entity by ID if the given value is not nil.
+func (uu *UserUpdate) SetNillableCustomerID(id *int) *UserUpdate {
+	if id != nil {
+		uu = uu.SetCustomerID(*id)
+	}
+	return uu
+}
+
+// SetCustomer sets the "customer" edge to the Customer entity.
+func (uu *UserUpdate) SetCustomer(c *Customer) *UserUpdate {
+	return uu.SetCustomerID(c.ID)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uu *UserUpdate) Mutation() *UserMutation {
 	return uu.mutation
@@ -85,6 +105,12 @@ func (uu *UserUpdate) RemoveCarts(c ...*Cart) *UserUpdate {
 		ids[i] = c[i].ID
 	}
 	return uu.RemoveCartIDs(ids...)
+}
+
+// ClearCustomer clears the "customer" edge to the Customer entity.
+func (uu *UserUpdate) ClearCustomer() *UserUpdate {
+	uu.mutation.ClearCustomer()
+	return uu
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -238,6 +264,41 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if uu.mutation.CustomerCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   user.CustomerTable,
+			Columns: []string{user.CustomerColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: customer.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.CustomerIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   user.CustomerTable,
+			Columns: []string{user.CustomerColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: customer.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, uu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{user.Label}
@@ -290,6 +351,25 @@ func (uuo *UserUpdateOne) AddCarts(c ...*Cart) *UserUpdateOne {
 	return uuo.AddCartIDs(ids...)
 }
 
+// SetCustomerID sets the "customer" edge to the Customer entity by ID.
+func (uuo *UserUpdateOne) SetCustomerID(id int) *UserUpdateOne {
+	uuo.mutation.SetCustomerID(id)
+	return uuo
+}
+
+// SetNillableCustomerID sets the "customer" edge to the Customer entity by ID if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableCustomerID(id *int) *UserUpdateOne {
+	if id != nil {
+		uuo = uuo.SetCustomerID(*id)
+	}
+	return uuo
+}
+
+// SetCustomer sets the "customer" edge to the Customer entity.
+func (uuo *UserUpdateOne) SetCustomer(c *Customer) *UserUpdateOne {
+	return uuo.SetCustomerID(c.ID)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uuo *UserUpdateOne) Mutation() *UserMutation {
 	return uuo.mutation
@@ -314,6 +394,12 @@ func (uuo *UserUpdateOne) RemoveCarts(c ...*Cart) *UserUpdateOne {
 		ids[i] = c[i].ID
 	}
 	return uuo.RemoveCartIDs(ids...)
+}
+
+// ClearCustomer clears the "customer" edge to the Customer entity.
+func (uuo *UserUpdateOne) ClearCustomer() *UserUpdateOne {
+	uuo.mutation.ClearCustomer()
+	return uuo
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -489,6 +575,41 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: cart.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if uuo.mutation.CustomerCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   user.CustomerTable,
+			Columns: []string{user.CustomerColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: customer.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.CustomerIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   user.CustomerTable,
+			Columns: []string{user.CustomerColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: customer.FieldID,
 				},
 			},
 		}

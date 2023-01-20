@@ -4,6 +4,7 @@ package ent
 
 import (
 	"fmt"
+	"shopular/ent/customer"
 	"shopular/ent/user"
 	"strings"
 
@@ -30,9 +31,11 @@ type User struct {
 type UserEdges struct {
 	// Carts holds the value of the carts edge.
 	Carts []*Cart `json:"carts,omitempty"`
+	// Customer holds the value of the customer edge.
+	Customer *Customer `json:"customer,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
 // CartsOrErr returns the Carts value or an error if the edge
@@ -42,6 +45,19 @@ func (e UserEdges) CartsOrErr() ([]*Cart, error) {
 		return e.Carts, nil
 	}
 	return nil, &NotLoadedError{edge: "carts"}
+}
+
+// CustomerOrErr returns the Customer value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e UserEdges) CustomerOrErr() (*Customer, error) {
+	if e.loadedTypes[1] {
+		if e.Customer == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: customer.Label}
+		}
+		return e.Customer, nil
+	}
+	return nil, &NotLoadedError{edge: "customer"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -100,6 +116,11 @@ func (u *User) assignValues(columns []string, values []any) error {
 // QueryCarts queries the "carts" edge of the User entity.
 func (u *User) QueryCarts() *CartQuery {
 	return (&UserClient{config: u.config}).QueryCarts(u)
+}
+
+// QueryCustomer queries the "customer" edge of the User entity.
+func (u *User) QueryCustomer() *CustomerQuery {
+	return (&UserClient{config: u.config}).QueryCustomer(u)
 }
 
 // Update returns a builder for updating this User.

@@ -24,6 +24,10 @@ func (s UserService) CreateNewUser(input dto.RegisterUser) *ent.User {
 		SaveX(context.Background())
 }
 
+func (s UserService) FindAll() ([]*ent.User, error) {
+	return s.client.User.Query().All(context.Background())
+}
+
 func (s UserService) FindByUsername(username string) *ent.User {
 	u, err := s.client.User.Query().Where(user.Username(username)).First(context.Background())
 	if err != nil {

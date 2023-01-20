@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"shopular/ent/cart"
 	"shopular/ent/category"
+	"shopular/ent/customer"
+	"shopular/ent/order"
 	"shopular/ent/product"
 	"shopular/ent/subcategory"
 	"shopular/ent/user"
@@ -37,6 +39,8 @@ func columnChecker(table string) func(string) error {
 	checks := map[string]func(string) bool{
 		cart.Table:        cart.ValidColumn,
 		category.Table:    category.ValidColumn,
+		customer.Table:    customer.ValidColumn,
+		order.Table:       order.ValidColumn,
 		product.Table:     product.ValidColumn,
 		subcategory.Table: subcategory.ValidColumn,
 		user.Table:        user.ValidColumn,

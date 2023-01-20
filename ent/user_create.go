@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"shopular/ent/cart"
+	"shopular/ent/customer"
 	"shopular/ent/user"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -51,6 +52,25 @@ func (uc *UserCreate) AddCarts(c ...*Cart) *UserCreate {
 		ids[i] = c[i].ID
 	}
 	return uc.AddCartIDs(ids...)
+}
+
+// SetCustomerID sets the "customer" edge to the Customer entity by ID.
+func (uc *UserCreate) SetCustomerID(id int) *UserCreate {
+	uc.mutation.SetCustomerID(id)
+	return uc
+}
+
+// SetNillableCustomerID sets the "customer" edge to the Customer entity by ID if the given value is not nil.
+func (uc *UserCreate) SetNillableCustomerID(id *int) *UserCreate {
+	if id != nil {
+		uc = uc.SetCustomerID(*id)
+	}
+	return uc
+}
+
+// SetCustomer sets the "customer" edge to the Customer entity.
+func (uc *UserCreate) SetCustomer(c *Customer) *UserCreate {
+	return uc.SetCustomerID(c.ID)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -193,6 +213,25 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: cart.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := uc.mutation.CustomerIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   user.CustomerTable,
+			Columns: []string{user.CustomerColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: customer.FieldID,
 				},
 			},
 		}

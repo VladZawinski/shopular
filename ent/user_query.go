@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"math"
 	"shopular/ent/cart"
+	"shopular/ent/customer"
 	"shopular/ent/predicate"
 	"shopular/ent/user"
 
@@ -19,13 +20,14 @@ import (
 // UserQuery is the builder for querying User entities.
 type UserQuery struct {
 	config
-	limit      *int
-	offset     *int
-	unique     *bool
-	order      []OrderFunc
-	fields     []string
-	predicates []predicate.User
-	withCarts  *CartQuery
+	limit        *int
+	offset       *int
+	unique       *bool
+	order        []OrderFunc
+	fields       []string
+	predicates   []predicate.User
+	withCarts    *CartQuery
+	withCustomer *CustomerQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -77,6 +79,28 @@ func (uq *UserQuery) QueryCarts() *CartQuery {
 			sqlgraph.From(user.Table, user.FieldID, selector),
 			sqlgraph.To(cart.Table, cart.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, user.CartsTable, user.CartsPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryCustomer chains the current query on the "customer" edge.
+func (uq *UserQuery) QueryCustomer() *CustomerQuery {
+	query := &CustomerQuery{config: uq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := uq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := uq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(customer.Table, customer.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, user.CustomerTable, user.CustomerColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
 		return fromU, nil
@@ -260,12 +284,13 @@ func (uq *UserQuery) Clone() *UserQuery {
 		return nil
 	}
 	return &UserQuery{
-		config:     uq.config,
-		limit:      uq.limit,
-		offset:     uq.offset,
-		order:      append([]OrderFunc{}, uq.order...),
-		predicates: append([]predicate.User{}, uq.predicates...),
-		withCarts:  uq.withCarts.Clone(),
+		config:       uq.config,
+		limit:        uq.limit,
+		offset:       uq.offset,
+		order:        append([]OrderFunc{}, uq.order...),
+		predicates:   append([]predicate.User{}, uq.predicates...),
+		withCarts:    uq.withCarts.Clone(),
+		withCustomer: uq.withCustomer.Clone(),
 		// clone intermediate query.
 		sql:    uq.sql.Clone(),
 		path:   uq.path,
@@ -281,6 +306,17 @@ func (uq *UserQuery) WithCarts(opts ...func(*CartQuery)) *UserQuery {
 		opt(query)
 	}
 	uq.withCarts = query
+	return uq
+}
+
+// WithCustomer tells the query-builder to eager-load the nodes that are connected to
+// the "customer" edge. The optional arguments are used to configure the query builder of the edge.
+func (uq *UserQuery) WithCustomer(opts ...func(*CustomerQuery)) *UserQuery {
+	query := &CustomerQuery{config: uq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	uq.withCustomer = query
 	return uq
 }
 
@@ -359,8 +395,9 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	var (
 		nodes       = []*User{}
 		_spec       = uq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
 			uq.withCarts != nil,
+			uq.withCustomer != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -385,6 +422,12 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 		if err := uq.loadCarts(ctx, query, nodes,
 			func(n *User) { n.Edges.Carts = []*Cart{} },
 			func(n *User, e *Cart) { n.Edges.Carts = append(n.Edges.Carts, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := uq.withCustomer; query != nil {
+		if err := uq.loadCustomer(ctx, query, nodes, nil,
+			func(n *User, e *Customer) { n.Edges.Customer = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -446,6 +489,34 @@ func (uq *UserQuery) loadCarts(ctx context.Context, query *CartQuery, nodes []*U
 		for kn := range nodes {
 			assign(kn, n)
 		}
+	}
+	return nil
+}
+func (uq *UserQuery) loadCustomer(ctx context.Context, query *CustomerQuery, nodes []*User, init func(*User), assign func(*User, *Customer)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*User)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+	}
+	query.withFKs = true
+	query.Where(predicate.Customer(func(s *sql.Selector) {
+		s.Where(sql.InValues(user.CustomerColumn, fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.user_customer
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "user_customer" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "user_customer" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
 	}
 	return nil
 }

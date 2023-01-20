@@ -19,6 +19,8 @@ const (
 	FieldRole = "role"
 	// EdgeCarts holds the string denoting the carts edge name in mutations.
 	EdgeCarts = "carts"
+	// EdgeCustomer holds the string denoting the customer edge name in mutations.
+	EdgeCustomer = "customer"
 	// Table holds the table name of the user in the database.
 	Table = "users"
 	// CartsTable is the table that holds the carts relation/edge. The primary key declared below.
@@ -26,6 +28,13 @@ const (
 	// CartsInverseTable is the table name for the Cart entity.
 	// It exists in this package in order to avoid circular dependency with the "cart" package.
 	CartsInverseTable = "carts"
+	// CustomerTable is the table that holds the customer relation/edge.
+	CustomerTable = "customers"
+	// CustomerInverseTable is the table name for the Customer entity.
+	// It exists in this package in order to avoid circular dependency with the "customer" package.
+	CustomerInverseTable = "customers"
+	// CustomerColumn is the table column denoting the customer relation/edge.
+	CustomerColumn = "user_customer"
 )
 
 // Columns holds all SQL columns for user fields.

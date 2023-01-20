@@ -24,6 +24,6 @@ func (User) Fields() []ent.Field {
 func (User) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("carts", Cart.Type),
-		edge.To("customer", User.Type).Unique(),
+		edge.To("customer", Customer.Type).Unique(),
 	}
 }

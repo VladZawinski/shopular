@@ -26,6 +26,8 @@ type config struct {
 type hooks struct {
 	Cart        []ent.Hook
 	Category    []ent.Hook
+	Customer    []ent.Hook
+	Order       []ent.Hook
 	Product     []ent.Hook
 	SubCategory []ent.Hook
 	User        []ent.Hook

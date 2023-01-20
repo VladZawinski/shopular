@@ -11,7 +11,8 @@ import (
 )
 
 type AuthHandler struct {
-	userService services.UserService
+	userService     services.UserService
+	customerService services.CustomerService
 }
 
 func NewAuthHandler(service services.UserService) AuthHandler {
@@ -55,6 +56,15 @@ func (h AuthHandler) Register(c *fiber.Ctx) error {
 	if existing != nil {
 		return fiber.NewError(fiber.StatusConflict)
 	}
-	h.userService.CreateNewUser(*body)
+	user := h.userService.CreateNewUser(*body)
+	if user != nil {
+		h.customerService.Create(dto.CreateCustomer{
+			FirstName: body.FirstName,
+			LastName:  body.LastName,
+			Address:   body.Address,
+			Phone:     body.Phone,
+			Email:     body.Email,
+		})
+	}
 	return c.SendStatus(fiber.StatusCreated)
 }

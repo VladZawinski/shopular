@@ -16,6 +16,8 @@ func SetUpHandlers(app *fiber.App, sp *services.Provider) {
 	staticRoutes(app)
 	authRoutes(api, sp.User)
 	cartRoutes(api, sp.Cart)
+	userRoutes(api, sp.User)
+	customerRoutes(api, sp.Customer)
 }
 
 func categoryRoutes(router fiber.Router, service services.CategoryService) {
@@ -63,6 +65,21 @@ func cartRoutes(router fiber.Router, service services.CartService) {
 	cart.Get("/", sch.ViewCart)
 	cart.Post("/add/:productId", sch.AddToCart)
 	cart.Post("/remove/:cartId", sch.RemoveFromCart)
+}
+
+func userRoutes(router fiber.Router, service services.UserService) {
+	user := router.Group("/user")
+	user.Use(middlewares.JwtGuard())
+	user.Use(middlewares.RoleGuard(middlewares.AdminRole))
+	uh := NewUserHandler(&service)
+	user.Get("/all", uh.FindAllUser)
+}
+
+func customerRoutes(router fiber.Router, service services.CustomerService) {
+	customer := router.Group("/customer")
+	customer.Use(middlewares.JwtGuard())
+	ch := CustomerHandler{service: &service}
+	customer.Get("/all", ch.FindAll)
 }
 
 func staticRoutes(app *fiber.App) {

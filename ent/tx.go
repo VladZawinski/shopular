@@ -16,6 +16,10 @@ type Tx struct {
 	Cart *CartClient
 	// Category is the client for interacting with the Category builders.
 	Category *CategoryClient
+	// Customer is the client for interacting with the Customer builders.
+	Customer *CustomerClient
+	// Order is the client for interacting with the Order builders.
+	Order *OrderClient
 	// Product is the client for interacting with the Product builders.
 	Product *ProductClient
 	// SubCategory is the client for interacting with the SubCategory builders.
@@ -155,6 +159,8 @@ func (tx *Tx) Client() *Client {
 func (tx *Tx) init() {
 	tx.Cart = NewCartClient(tx.config)
 	tx.Category = NewCategoryClient(tx.config)
+	tx.Customer = NewCustomerClient(tx.config)
+	tx.Order = NewOrderClient(tx.config)
 	tx.Product = NewProductClient(tx.config)
 	tx.SubCategory = NewSubCategoryClient(tx.config)
 	tx.User = NewUserClient(tx.config)

@@ -1,8 +1,6 @@
 package dto
 
-type RegisterUser struct {
-	Username  string `json:"username"`
-	Password  string `json:"password"`
+type CreateCustomer struct {
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
 	Address   string `json:"address"`

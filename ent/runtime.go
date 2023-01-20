@@ -4,6 +4,7 @@ package ent
 
 import (
 	"shopular/ent/category"
+	"shopular/ent/customer"
 	"shopular/ent/schema"
 	"shopular/ent/subcategory"
 	"time"
@@ -23,6 +24,12 @@ func init() {
 	categoryDescUpdatedAt := categoryFields[3].Descriptor()
 	// category.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	category.DefaultUpdatedAt = categoryDescUpdatedAt.Default.(func() time.Time)
+	customerFields := schema.Customer{}.Fields()
+	_ = customerFields
+	// customerDescOrderCount is the schema descriptor for order_count field.
+	customerDescOrderCount := customerFields[5].Descriptor()
+	// customer.DefaultOrderCount holds the default value on creation for the order_count field.
+	customer.DefaultOrderCount = customerDescOrderCount.Default.(int)
 	subcategoryFields := schema.SubCategory{}.Fields()
 	_ = subcategoryFields
 	// subcategoryDescCreatedAt is the schema descriptor for created_at field.
