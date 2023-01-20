@@ -38,9 +38,9 @@ var (
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "first_name", Type: field.TypeString},
 		{Name: "last_name", Type: field.TypeString},
-		{Name: "address", Type: field.TypeString},
-		{Name: "phone", Type: field.TypeString},
-		{Name: "email", Type: field.TypeString},
+		{Name: "address", Type: field.TypeString, Nullable: true},
+		{Name: "phone", Type: field.TypeString, Nullable: true},
+		{Name: "email", Type: field.TypeString, Nullable: true},
 		{Name: "order_count", Type: field.TypeInt, Default: 0},
 		{Name: "user_customer", Type: field.TypeInt, Unique: true},
 	}

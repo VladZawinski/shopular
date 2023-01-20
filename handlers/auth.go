@@ -57,14 +57,19 @@ func (h AuthHandler) Register(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusConflict)
 	}
 	user := h.userService.CreateNewUser(*body)
+
 	if user != nil {
-		h.customerService.Create(dto.CreateCustomer{
+		fmt.Println(body)
+		_, err := h.customerService.Create(dto.CreateCustomer{
 			FirstName: body.FirstName,
 			LastName:  body.LastName,
 			Address:   body.Address,
 			Phone:     body.Phone,
 			Email:     body.Email,
 		})
+		if err != nil {
+			return fiber.ErrBadRequest
+		}
 	}
 	return c.SendStatus(fiber.StatusCreated)
 }

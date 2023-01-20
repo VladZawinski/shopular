@@ -16,9 +16,9 @@ func (Customer) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("first_name"),
 		field.String("last_name"),
-		field.String("address").Nillable(),
-		field.String("phone").Nillable(),
-		field.String("email").Nillable(),
+		field.String("address").Optional(),
+		field.String("phone").Optional(),
+		field.String("email").Optional(),
 		field.Int("order_count").Default(0),
 	}
 }

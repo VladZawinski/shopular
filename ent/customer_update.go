@@ -46,15 +46,57 @@ func (cu *CustomerUpdate) SetAddress(s string) *CustomerUpdate {
 	return cu
 }
 
+// SetNillableAddress sets the "address" field if the given value is not nil.
+func (cu *CustomerUpdate) SetNillableAddress(s *string) *CustomerUpdate {
+	if s != nil {
+		cu.SetAddress(*s)
+	}
+	return cu
+}
+
+// ClearAddress clears the value of the "address" field.
+func (cu *CustomerUpdate) ClearAddress() *CustomerUpdate {
+	cu.mutation.ClearAddress()
+	return cu
+}
+
 // SetPhone sets the "phone" field.
 func (cu *CustomerUpdate) SetPhone(s string) *CustomerUpdate {
 	cu.mutation.SetPhone(s)
 	return cu
 }
 
+// SetNillablePhone sets the "phone" field if the given value is not nil.
+func (cu *CustomerUpdate) SetNillablePhone(s *string) *CustomerUpdate {
+	if s != nil {
+		cu.SetPhone(*s)
+	}
+	return cu
+}
+
+// ClearPhone clears the value of the "phone" field.
+func (cu *CustomerUpdate) ClearPhone() *CustomerUpdate {
+	cu.mutation.ClearPhone()
+	return cu
+}
+
 // SetEmail sets the "email" field.
 func (cu *CustomerUpdate) SetEmail(s string) *CustomerUpdate {
 	cu.mutation.SetEmail(s)
+	return cu
+}
+
+// SetNillableEmail sets the "email" field if the given value is not nil.
+func (cu *CustomerUpdate) SetNillableEmail(s *string) *CustomerUpdate {
+	if s != nil {
+		cu.SetEmail(*s)
+	}
+	return cu
+}
+
+// ClearEmail clears the value of the "email" field.
+func (cu *CustomerUpdate) ClearEmail() *CustomerUpdate {
+	cu.mutation.ClearEmail()
 	return cu
 }
 
@@ -196,11 +238,20 @@ func (cu *CustomerUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := cu.mutation.Address(); ok {
 		_spec.SetField(customer.FieldAddress, field.TypeString, value)
 	}
+	if cu.mutation.AddressCleared() {
+		_spec.ClearField(customer.FieldAddress, field.TypeString)
+	}
 	if value, ok := cu.mutation.Phone(); ok {
 		_spec.SetField(customer.FieldPhone, field.TypeString, value)
 	}
+	if cu.mutation.PhoneCleared() {
+		_spec.ClearField(customer.FieldPhone, field.TypeString)
+	}
 	if value, ok := cu.mutation.Email(); ok {
 		_spec.SetField(customer.FieldEmail, field.TypeString, value)
+	}
+	if cu.mutation.EmailCleared() {
+		_spec.ClearField(customer.FieldEmail, field.TypeString)
 	}
 	if value, ok := cu.mutation.OrderCount(); ok {
 		_spec.SetField(customer.FieldOrderCount, field.TypeInt, value)
@@ -280,15 +331,57 @@ func (cuo *CustomerUpdateOne) SetAddress(s string) *CustomerUpdateOne {
 	return cuo
 }
 
+// SetNillableAddress sets the "address" field if the given value is not nil.
+func (cuo *CustomerUpdateOne) SetNillableAddress(s *string) *CustomerUpdateOne {
+	if s != nil {
+		cuo.SetAddress(*s)
+	}
+	return cuo
+}
+
+// ClearAddress clears the value of the "address" field.
+func (cuo *CustomerUpdateOne) ClearAddress() *CustomerUpdateOne {
+	cuo.mutation.ClearAddress()
+	return cuo
+}
+
 // SetPhone sets the "phone" field.
 func (cuo *CustomerUpdateOne) SetPhone(s string) *CustomerUpdateOne {
 	cuo.mutation.SetPhone(s)
 	return cuo
 }
 
+// SetNillablePhone sets the "phone" field if the given value is not nil.
+func (cuo *CustomerUpdateOne) SetNillablePhone(s *string) *CustomerUpdateOne {
+	if s != nil {
+		cuo.SetPhone(*s)
+	}
+	return cuo
+}
+
+// ClearPhone clears the value of the "phone" field.
+func (cuo *CustomerUpdateOne) ClearPhone() *CustomerUpdateOne {
+	cuo.mutation.ClearPhone()
+	return cuo
+}
+
 // SetEmail sets the "email" field.
 func (cuo *CustomerUpdateOne) SetEmail(s string) *CustomerUpdateOne {
 	cuo.mutation.SetEmail(s)
+	return cuo
+}
+
+// SetNillableEmail sets the "email" field if the given value is not nil.
+func (cuo *CustomerUpdateOne) SetNillableEmail(s *string) *CustomerUpdateOne {
+	if s != nil {
+		cuo.SetEmail(*s)
+	}
+	return cuo
+}
+
+// ClearEmail clears the value of the "email" field.
+func (cuo *CustomerUpdateOne) ClearEmail() *CustomerUpdateOne {
+	cuo.mutation.ClearEmail()
 	return cuo
 }
 
@@ -460,11 +553,20 @@ func (cuo *CustomerUpdateOne) sqlSave(ctx context.Context) (_node *Customer, err
 	if value, ok := cuo.mutation.Address(); ok {
 		_spec.SetField(customer.FieldAddress, field.TypeString, value)
 	}
+	if cuo.mutation.AddressCleared() {
+		_spec.ClearField(customer.FieldAddress, field.TypeString)
+	}
 	if value, ok := cuo.mutation.Phone(); ok {
 		_spec.SetField(customer.FieldPhone, field.TypeString, value)
 	}
+	if cuo.mutation.PhoneCleared() {
+		_spec.ClearField(customer.FieldPhone, field.TypeString)
+	}
 	if value, ok := cuo.mutation.Email(); ok {
 		_spec.SetField(customer.FieldEmail, field.TypeString, value)
+	}
+	if cuo.mutation.EmailCleared() {
+		_spec.ClearField(customer.FieldEmail, field.TypeString)
 	}
 	if value, ok := cuo.mutation.OrderCount(); ok {
 		_spec.SetField(customer.FieldOrderCount, field.TypeInt, value)

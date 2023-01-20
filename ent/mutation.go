@@ -1335,7 +1335,7 @@ func (m *CustomerMutation) Address() (r string, exists bool) {
 // OldAddress returns the old "address" field's value of the Customer entity.
 // If the Customer object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *CustomerMutation) OldAddress(ctx context.Context) (v *string, err error) {
+func (m *CustomerMutation) OldAddress(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldAddress is only allowed on UpdateOne operations")
 	}
@@ -1349,9 +1349,22 @@ func (m *CustomerMutation) OldAddress(ctx context.Context) (v *string, err error
 	return oldValue.Address, nil
 }
 
+// ClearAddress clears the value of the "address" field.
+func (m *CustomerMutation) ClearAddress() {
+	m.address = nil
+	m.clearedFields[customer.FieldAddress] = struct{}{}
+}
+
+// AddressCleared returns if the "address" field was cleared in this mutation.
+func (m *CustomerMutation) AddressCleared() bool {
+	_, ok := m.clearedFields[customer.FieldAddress]
+	return ok
+}
+
 // ResetAddress resets all changes to the "address" field.
 func (m *CustomerMutation) ResetAddress() {
 	m.address = nil
+	delete(m.clearedFields, customer.FieldAddress)
 }
 
 // SetPhone sets the "phone" field.
@@ -1371,7 +1384,7 @@ func (m *CustomerMutation) Phone() (r string, exists bool) {
 // OldPhone returns the old "phone" field's value of the Customer entity.
 // If the Customer object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *CustomerMutation) OldPhone(ctx context.Context) (v *string, err error) {
+func (m *CustomerMutation) OldPhone(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldPhone is only allowed on UpdateOne operations")
 	}
@@ -1385,9 +1398,22 @@ func (m *CustomerMutation) OldPhone(ctx context.Context) (v *string, err error) 
 	return oldValue.Phone, nil
 }
 
+// ClearPhone clears the value of the "phone" field.
+func (m *CustomerMutation) ClearPhone() {
+	m.phone = nil
+	m.clearedFields[customer.FieldPhone] = struct{}{}
+}
+
+// PhoneCleared returns if the "phone" field was cleared in this mutation.
+func (m *CustomerMutation) PhoneCleared() bool {
+	_, ok := m.clearedFields[customer.FieldPhone]
+	return ok
+}
+
 // ResetPhone resets all changes to the "phone" field.
 func (m *CustomerMutation) ResetPhone() {
 	m.phone = nil
+	delete(m.clearedFields, customer.FieldPhone)
 }
 
 // SetEmail sets the "email" field.
@@ -1407,7 +1433,7 @@ func (m *CustomerMutation) Email() (r string, exists bool) {
 // OldEmail returns the old "email" field's value of the Customer entity.
 // If the Customer object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *CustomerMutation) OldEmail(ctx context.Context) (v *string, err error) {
+func (m *CustomerMutation) OldEmail(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldEmail is only allowed on UpdateOne operations")
 	}
@@ -1421,9 +1447,22 @@ func (m *CustomerMutation) OldEmail(ctx context.Context) (v *string, err error) 
 	return oldValue.Email, nil
 }
 
+// ClearEmail clears the value of the "email" field.
+func (m *CustomerMutation) ClearEmail() {
+	m.email = nil
+	m.clearedFields[customer.FieldEmail] = struct{}{}
+}
+
+// EmailCleared returns if the "email" field was cleared in this mutation.
+func (m *CustomerMutation) EmailCleared() bool {
+	_, ok := m.clearedFields[customer.FieldEmail]
+	return ok
+}
+
 // ResetEmail resets all changes to the "email" field.
 func (m *CustomerMutation) ResetEmail() {
 	m.email = nil
+	delete(m.clearedFields, customer.FieldEmail)
 }
 
 // SetOrderCount sets the "order_count" field.
@@ -1695,7 +1734,17 @@ func (m *CustomerMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *CustomerMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(customer.FieldAddress) {
+		fields = append(fields, customer.FieldAddress)
+	}
+	if m.FieldCleared(customer.FieldPhone) {
+		fields = append(fields, customer.FieldPhone)
+	}
+	if m.FieldCleared(customer.FieldEmail) {
+		fields = append(fields, customer.FieldEmail)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -1708,6 +1757,17 @@ func (m *CustomerMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *CustomerMutation) ClearField(name string) error {
+	switch name {
+	case customer.FieldAddress:
+		m.ClearAddress()
+		return nil
+	case customer.FieldPhone:
+		m.ClearPhone()
+		return nil
+	case customer.FieldEmail:
+		m.ClearEmail()
+		return nil
+	}
 	return fmt.Errorf("unknown Customer nullable field %s", name)
 }
 

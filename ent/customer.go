@@ -21,11 +21,11 @@ type Customer struct {
 	// LastName holds the value of the "last_name" field.
 	LastName string `json:"last_name,omitempty"`
 	// Address holds the value of the "address" field.
-	Address *string `json:"address,omitempty"`
+	Address string `json:"address,omitempty"`
 	// Phone holds the value of the "phone" field.
-	Phone *string `json:"phone,omitempty"`
+	Phone string `json:"phone,omitempty"`
 	// Email holds the value of the "email" field.
-	Email *string `json:"email,omitempty"`
+	Email string `json:"email,omitempty"`
 	// OrderCount holds the value of the "order_count" field.
 	OrderCount int `json:"order_count,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -104,22 +104,19 @@ func (c *Customer) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field address", values[i])
 			} else if value.Valid {
-				c.Address = new(string)
-				*c.Address = value.String
+				c.Address = value.String
 			}
 		case customer.FieldPhone:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field phone", values[i])
 			} else if value.Valid {
-				c.Phone = new(string)
-				*c.Phone = value.String
+				c.Phone = value.String
 			}
 		case customer.FieldEmail:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field email", values[i])
 			} else if value.Valid {
-				c.Email = new(string)
-				*c.Email = value.String
+				c.Email = value.String
 			}
 		case customer.FieldOrderCount:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -173,20 +170,14 @@ func (c *Customer) String() string {
 	builder.WriteString("last_name=")
 	builder.WriteString(c.LastName)
 	builder.WriteString(", ")
-	if v := c.Address; v != nil {
-		builder.WriteString("address=")
-		builder.WriteString(*v)
-	}
+	builder.WriteString("address=")
+	builder.WriteString(c.Address)
 	builder.WriteString(", ")
-	if v := c.Phone; v != nil {
-		builder.WriteString("phone=")
-		builder.WriteString(*v)
-	}
+	builder.WriteString("phone=")
+	builder.WriteString(c.Phone)
 	builder.WriteString(", ")
-	if v := c.Email; v != nil {
-		builder.WriteString("email=")
-		builder.WriteString(*v)
-	}
+	builder.WriteString("email=")
+	builder.WriteString(c.Email)
 	builder.WriteString(", ")
 	builder.WriteString("order_count=")
 	builder.WriteString(fmt.Sprintf("%v", c.OrderCount))

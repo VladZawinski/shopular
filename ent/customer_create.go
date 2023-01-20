@@ -38,15 +38,39 @@ func (cc *CustomerCreate) SetAddress(s string) *CustomerCreate {
 	return cc
 }
 
+// SetNillableAddress sets the "address" field if the given value is not nil.
+func (cc *CustomerCreate) SetNillableAddress(s *string) *CustomerCreate {
+	if s != nil {
+		cc.SetAddress(*s)
+	}
+	return cc
+}
+
 // SetPhone sets the "phone" field.
 func (cc *CustomerCreate) SetPhone(s string) *CustomerCreate {
 	cc.mutation.SetPhone(s)
 	return cc
 }
 
+// SetNillablePhone sets the "phone" field if the given value is not nil.
+func (cc *CustomerCreate) SetNillablePhone(s *string) *CustomerCreate {
+	if s != nil {
+		cc.SetPhone(*s)
+	}
+	return cc
+}
+
 // SetEmail sets the "email" field.
 func (cc *CustomerCreate) SetEmail(s string) *CustomerCreate {
 	cc.mutation.SetEmail(s)
+	return cc
+}
+
+// SetNillableEmail sets the "email" field if the given value is not nil.
+func (cc *CustomerCreate) SetNillableEmail(s *string) *CustomerCreate {
+	if s != nil {
+		cc.SetEmail(*s)
+	}
 	return cc
 }
 
@@ -166,15 +190,6 @@ func (cc *CustomerCreate) check() error {
 	if _, ok := cc.mutation.LastName(); !ok {
 		return &ValidationError{Name: "last_name", err: errors.New(`ent: missing required field "Customer.last_name"`)}
 	}
-	if _, ok := cc.mutation.Address(); !ok {
-		return &ValidationError{Name: "address", err: errors.New(`ent: missing required field "Customer.address"`)}
-	}
-	if _, ok := cc.mutation.Phone(); !ok {
-		return &ValidationError{Name: "phone", err: errors.New(`ent: missing required field "Customer.phone"`)}
-	}
-	if _, ok := cc.mutation.Email(); !ok {
-		return &ValidationError{Name: "email", err: errors.New(`ent: missing required field "Customer.email"`)}
-	}
 	if _, ok := cc.mutation.OrderCount(); !ok {
 		return &ValidationError{Name: "order_count", err: errors.New(`ent: missing required field "Customer.order_count"`)}
 	}
@@ -218,15 +233,15 @@ func (cc *CustomerCreate) createSpec() (*Customer, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := cc.mutation.Address(); ok {
 		_spec.SetField(customer.FieldAddress, field.TypeString, value)
-		_node.Address = &value
+		_node.Address = value
 	}
 	if value, ok := cc.mutation.Phone(); ok {
 		_spec.SetField(customer.FieldPhone, field.TypeString, value)
-		_node.Phone = &value
+		_node.Phone = value
 	}
 	if value, ok := cc.mutation.Email(); ok {
 		_spec.SetField(customer.FieldEmail, field.TypeString, value)
-		_node.Email = &value
+		_node.Email = value
 	}
 	if value, ok := cc.mutation.OrderCount(); ok {
 		_spec.SetField(customer.FieldOrderCount, field.TypeInt, value)

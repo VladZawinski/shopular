@@ -19,9 +19,9 @@ func (cs CustomerService) Create(body dto.CreateCustomer) (*ent.Customer, error)
 		Create().
 		SetFirstName(body.FirstName).
 		SetLastName(body.LastName).
-		SetAddress(body.Address).
-		SetPhone(body.Phone).
-		SetEmail(body.Email).
+		SetAddress(*body.Address).
+		SetPhone(*body.Phone).
+		SetEmail(*body.Email).
 		Save(context.Background())
 }
 
